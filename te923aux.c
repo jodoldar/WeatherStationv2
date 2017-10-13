@@ -1,5 +1,4 @@
 #include "te923aux.h"
-#include "te923driver.h"
 #include <stdio.h>
 
 void usage() {

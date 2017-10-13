@@ -1,6 +1,7 @@
 #ifndef TE923AUX_H_
 #define TE923AUX_H_
 
+#include "te923driver.h"
 #include <usb.h>
 
 #define TE923_VENDOR    0x1130
