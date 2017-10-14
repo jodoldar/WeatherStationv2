@@ -17,7 +17,63 @@
  #include <sys/socket.h>
  #include <netinet/in.h>
  #include <netdb.h>
+ #include <usb.h>
  #include "WeatherStat.h"
+ #include "te923aux.h"
+ #include "te923driver.h"
+ 
+  int main(int argc, char *argv[])
+ {
+	 printf("Variables declaration...");
+	 char sUrlMessage[BUFFER_NET_LEN];
+	 struct usb_dev_handle *stUsbDevice;
+	 Te923DataSet_t *stDataSet;
+	 int i;
+	 printf(" OK\n");
+	 
+	 printf("Variables initialization...");
+	 memcpy(sUrlMessage,"\0",strlen(sUrlMessage));
+	 stUsbDevice = (usb_dev_handle*)malloc(sizeof(stUsbDevice));
+	 memset(stUsbDevice,0,sizeof(stUsbDevice));
+	 stDataSet = (Te923DataSet_t*)malloc(sizeof(Te923DataSet_t));
+	 memset(stDataSet,0,sizeof(Te923DataSet_t));
+	 i=0;
+	 printf(" OK\n");
+	 
+	 // Retrieve information from the device
+	 printf("Retrieving information from the device...");
+	 stUsbDevice = te923_handle();
+	 get_te923_memdata(stUsbDevice,stDataSet,0);
+	 printf("Information: \n");
+	 printf("Timestamp: %u\n", stDataSet->timestamp);
+	 for(i=0;i<6;i++){
+		 printf("Temperature[%d]: %f\n",i, stDataSet->t[i]);
+	 }
+	 for(i=0;i<6;i++){
+		 printf("Humidity[%d]: %f\n",i, stDataSet->h[i]);
+	 }
+	 printf("Wind chill: %f\n", stDataSet->wChill);
+	 printf("Pressure: %f\n", stDataSet->press);
+	 
+	 printData(stDataSet,":");
+	 
+	 te923_close(stUsbDevice);
+	 printf(" OK\n");
+	 
+	 // Envio de la informacion a Weather Underground
+	 printf("Sending information to Weather Underground... ");
+	 sprintf(sUrlMessage,"ID=ICOMUNID85&PASSWORD=1142aee1&action=updateraw&dateutc=now&humidity=80&baromin=2992&tempf=55");
+	 
+	 if(iSendDataToWUService(sUrlMessage))
+	 {
+		 printf("ERROR: Failure in the communication with the Weather Underground services to send the data.\n");
+	 }else
+	 {
+		 printf("OK: Data sent to Weather Underground\n");
+	 }
+	 printf(" OK\n");
+	 return 0;
+ } 
  
  int iSendDataToWUService(char *sMessage)
  {
@@ -30,8 +86,7 @@
 	 int iSent, iReceived;
 	 int iTotal;
 	 char sRequest[BUFFER_NET_LEN];
-	 char sResponse[4096*500];
-	 fd_set desLectura;
+	 char sResponse[BUFFER_NET_LEN];
 	 
 	 iPortNumber = 80;
 	 memcpy(sWUHost,"\0",strlen(sWUHost));
@@ -43,16 +98,15 @@
 	 iReceived = 0;
 	 iTotal = 0;
 	 memcpy(sResponse,"\0",strlen(sResponse));
-	 FD_ZERO(&desLectura);
 	 
 	 sprintf(sWUHost,"weatherstation.wunderground.com");
-	 //sprintf(sRequest,"GET https://www.%s/weatherstation/updateweatherstation.php?%s HTTP/1.0\r\nHost: %s\r\n\r\n",sWUHost,sMessage,sWUHost);
-	 sprintf(sRequest,"GET https://www.%s/weatherstation/updateweatherstation.php HTTP/1.0\r\nHost: %s\r\n\r\n",sWUHost,sWUHost);
-
+	 sprintf(sRequest,"GET /weatherstation/updateweatherstation.php?%s HTTP/1.1\r\n\r\n",sMessage);
+	 
 	 printf("Request:\n%s\n",sRequest);
+	 printf("Longitude: %d\n",strlen(sRequest));
 	 
 	 iSocketFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	 FD_SET(iSocketFD,&desLectura);
+	 printf("Socket created\n");
 	 if(iSocketFD < 0)
 	 {
 		 printf("ERROR: Fail at opening the socket.\n");
@@ -60,6 +114,7 @@
 	 }
 	 
 	 stServer = gethostbyname(sWUHost);
+	 printf("Host addres resolved\n");
 	 printf("%s\n",stServer->h_name);
 	 if(stServer == NULL)
 	 {
@@ -97,14 +152,10 @@
 		 iSent += iBytesSent;
 	 }while(iSent < iTotal);
 	 printf("Message sent.\n%s\n",sRequest);
-	 send(iSocketFD,sRequest,strlen(sRequest),0);
-	 printf("Second message sent.\n");
 	 
-	 //shutdown(iSocketFD,SHUT_WR);
-	 select(iSocketFD+1,&desLectura,NULL,NULL,NULL);
-	 
-	 iTotal = strlen(sResponse);
+	 iTotal = BUFFER_NET_LEN; 	 
 	 iReceived = 0;
+	 
 	 do
 	 {
 		 iBytesReceived = read(iSocketFD,sResponse+iReceived,iTotal-iReceived);
@@ -127,35 +178,9 @@
 		 printf("ERROR: The response is bigger than the buffer.\n");
 	 }
 	 
-	 iReceived = recv(iSocketFD,sResponse,strlen(sResponse),0);
-	 if(iReceived == iTotal)
-	 {
-		 printf("ERROR: The response is bigger than the buffer.\n%d\n",iReceived);
-	 }
-	 
 	 close(iSocketFD);
 	 printf("Connection closed.\n");
 	 printf("Response: %s\n", sResponse);
 	 return 0;
  }
  
- int main(int argc, char *argv[])
- {
-	 printf("Variables declaration...");
-	 char sUrlMessage[BUFFER_NET_LEN];
-	 printf(" OK\n");
-	 
-	 printf("Variables initialization...");
-	 memcpy(sUrlMessage,"\0",strlen(sUrlMessage));
-	 sprintf(sUrlMessage,"ID=ICOMUNID85&PASSWORD=1142aee1&action=updateraw&dateutc=now&humidity=80&baromin=2992&tempf=55");
-	 printf(" OK\n");
-	 
-	 if(iSendDataToWUService(sUrlMessage))
-	 {
-		 printf("ERROR: Failure in the communication with the Weather Underground services to send the data.\n");
-	 }else
-	 {
-		 printf("OK: Data sent to Weather Underground\n");
-	 }
-	 return 0;
- } 

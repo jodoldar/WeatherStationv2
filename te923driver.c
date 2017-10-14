@@ -4,7 +4,7 @@
 #include <string.h>
 #include <time.h>
 
-extern unsigned short debug;
+unsigned short debug = 0;
 
 
 void printBuffer(unsigned char *buf, int size) {
