@@ -10,6 +10,7 @@
  * 		Keep a copy of the information for future processing
  */
  
+ #include <math.h>
  #include <stdio.h>
  #include <stdlib.h>
  #include <unistd.h>
@@ -28,7 +29,6 @@
 	 char sUrlMessage[BUFFER_NET_LEN];
 	 struct usb_dev_handle *stUsbDevice;
 	 Te923DataSet_t *stDataSet;
-	 int i;
 	 printf(" OK\n");
 	 
 	 printf("Variables initialization...");
@@ -37,7 +37,6 @@
 	 memset(stUsbDevice,0,sizeof(stUsbDevice));
 	 stDataSet = (Te923DataSet_t*)malloc(sizeof(Te923DataSet_t));
 	 memset(stDataSet,0,sizeof(Te923DataSet_t));
-	 i=0;
 	 printf(" OK\n");
 	 
 	 // Retrieve information from the device
@@ -49,12 +48,12 @@
 	 
 	 // Create the URL with the data received
 	 printf("Creating an URL with information from the device...");
-	 printf(" OK\n");
+	 sprintf(sUrlMessage,"ID=ICOMUNID85&PASSWORD=1142aee1&action=updateraw&dateutc=now&rainin=0&dailyrainin=0"); //&humidity=80&baromin=2992&tempf=55");
+	 vCreateUrlFromData(stDataSet, sUrlMessage);
+	 printf(" OK \n");
 	 
 	 // Envio de la informacion a Weather Underground
 	 printf("Sending information to Weather Underground... ");
-	 sprintf(sUrlMessage,"ID=ICOMUNID85&PASSWORD=1142aee1&action=updateraw&dateutc=now&humidity=80&baromin=2992&tempf=55");
-	 
 	 if(iSendDataToWUService(sUrlMessage))
 	 {
 		 perror("ERROR: Failure in the communication with the Weather Underground services to send the data.\n");
@@ -63,23 +62,75 @@
 	 {
 		 printf(" OK\n"); //Data sent to Weather Underground\n");
 	 }
+	 
 	 return 0;
  } 
  
  void vCreateUrlFromData(Te923DataSet_t *stInputDataSet, char *sOutputUrl)
  {
-	 printf("Information: \n");
-	 printf("Timestamp: %u\n", stInputDataSet->timestamp);
-	 for(i=0;i<6;i++){
-		 printf("Temperature[%d]: %0.2f\n",i, stInputDataSet->t[i]);
-	 }
-	 for(i=0;i<6;i++){
-		 printf("Humidity[%d]: %d\n",i, stInputDataSet->h[i]);
-	 }
-	 printf("Wind chill: %0.1f\n", stInputDataSet->wChill);
-	 printf("Pressure: %0.1f\n", stInputDataSet->press);
+	int i;
+	float dewpt;
+	char sAuxElem[BUFFER_NET_LEN];
+
+	memcpy(sAuxElem,"\0",strlen(sAuxElem));
+	dewpt = 0;
+
+	if(stInputDataSet->_t[1]==0){
+		sprintf(sAuxElem,"&tempf=%0.2f",((stInputDataSet->t[1]*9)/5)+32);
+		strcat(sOutputUrl,sAuxElem);
+	}
+	if(stInputDataSet->_h[1]==0){
+		sprintf(sAuxElem,"&humidity=%d",stInputDataSet->h[1]);
+		strcat(sOutputUrl,sAuxElem);
+	}
+	if(stInputDataSet->_press==0){
+		sprintf(sAuxElem,"&baromin=%0.2f",stInputDataSet->press*0.02952998751);
+		strcat(sOutputUrl,sAuxElem);
+	}
+	if(stInputDataSet->_wSpeed==0){
+		sprintf(sAuxElem,"&windspeedmph=%0.1f",stInputDataSet->wSpeed*2.23694);
+		strcat(sOutputUrl,sAuxElem);
+	}
+	if(stInputDataSet->_wGust==0){
+		sprintf(sAuxElem,"&windgustmph=%0.1f",stInputDataSet->wGust*2.23694);
+		strcat(sOutputUrl,sAuxElem);
+	}
+	if(stInputDataSet->_wDir==0){
+		sprintf(sAuxElem,"&winddir=%0.0f",stInputDataSet->wDir*22.5);
+		strcat(sOutputUrl,sAuxElem);
+	}
+	if(stInputDataSet->_t[1]==0 && stInputDataSet->_h[1]==0){
+		dewpt = pow(((float)stInputDataSet->h[1]/100),0.125);
+		dewpt *= (112+(0.9*stInputDataSet->t[1]));
+		dewpt += (stInputDataSet->t[1]*0.1);
+		dewpt -= 112;
+		sprintf(sAuxElem,"&dewptf=%0.2f",((dewpt*9)/5)+32);
+		strcat(sOutputUrl,sAuxElem);
+	}
 	 
-	 printData(stInputDataSet,":");
+	if(DEBUG_PARSE){
+		 printf("Information: \n");
+		 printf("Timestamp: %u\n", stInputDataSet->timestamp);
+		 for(i=0;i<6;i++){
+			 if(stInputDataSet->_t[i]==0){
+				printf("Temperature[%d]: %0.2f\n",i, stInputDataSet->t[i]);
+			}
+		 }
+		 for(i=0;i<6;i++){
+			 if(stInputDataSet->_h[i]==0){
+				printf("Humidity[%d]: %d\n",i, stInputDataSet->h[i]);
+			}
+			
+		 }
+		 printf("Wind chill: %0.1f\n", stInputDataSet->wChill);
+		 printf("Wind speed: %0.1f\n", stInputDataSet->wSpeed);
+		 printf("Wind gust: %0.1f\n", stInputDataSet->wGust);
+		 printf("Wind dir: %0.0f\n", stInputDataSet->wDir*22.5);
+		 printf("Pressure: %0.1f\n", stInputDataSet->press);
+		 printf("Punto de rocio: %0.2f\n", dewpt);
+		 printData(stInputDataSet,":");
+	}
+	 
  }
  
  int iSendDataToWUService(char *sMessage)

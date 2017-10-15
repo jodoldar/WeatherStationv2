@@ -1,5 +1,5 @@
 WeatherStat: WeatherStat.o te923driver.o te923aux.o
-	gcc -o WeatherStat WeatherStat.o te923driver.o te923aux.o -lusb 
+	gcc -o WeatherStat WeatherStat.o te923driver.o te923aux.o -lusb -lm
 WeatherStat.o: WeatherStat.c te923driver.o te923aux.o
 	gcc -c WeatherStat.c -I WeatherStat.h
 te923driver.o: te923driver.c te923aux.o
