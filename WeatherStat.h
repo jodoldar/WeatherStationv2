@@ -7,6 +7,7 @@
 #define BUFFER_NET_LEN 1024
 
 #define SEND_DATA_ERROR 1
+#define DEBUG_NET 0
 
 int iSendDataToWUService(char *sMessage);
 

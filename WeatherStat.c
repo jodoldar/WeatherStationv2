@@ -43,17 +43,17 @@
 	 // Retrieve information from the device
 	 printf("Retrieving information from the device...");
 	 stUsbDevice = te923_handle();
-	 get_te923_memdata(stUsbDevice,stDataSet,0);
+	 get_te923_lifedata(stUsbDevice,stDataSet);
 	 printf("Information: \n");
 	 printf("Timestamp: %u\n", stDataSet->timestamp);
 	 for(i=0;i<6;i++){
-		 printf("Temperature[%d]: %f\n",i, stDataSet->t[i]);
+		 printf("Temperature[%d]: %0.2f\n",i, stDataSet->t[i]);
 	 }
 	 for(i=0;i<6;i++){
-		 printf("Humidity[%d]: %f\n",i, stDataSet->h[i]);
+		 printf("Humidity[%d]: %d\n",i, stDataSet->h[i]);
 	 }
-	 printf("Wind chill: %f\n", stDataSet->wChill);
-	 printf("Pressure: %f\n", stDataSet->press);
+	 printf("Wind chill: %0.1f\n", stDataSet->wChill);
+	 printf("Pressure: %0.1f\n", stDataSet->press);
 	 
 	 printData(stDataSet,":");
 	 
@@ -66,12 +66,12 @@
 	 
 	 if(iSendDataToWUService(sUrlMessage))
 	 {
-		 printf("ERROR: Failure in the communication with the Weather Underground services to send the data.\n");
+		 perror("ERROR: Failure in the communication with the Weather Underground services to send the data.\n");
+		 printf(" FAIL\n");
 	 }else
 	 {
-		 printf("OK: Data sent to Weather Underground\n");
+		 printf(" OK\n");//Data sent to Weather Underground\n");
 	 }
-	 printf(" OK\n");
 	 return 0;
  } 
  
@@ -102,23 +102,29 @@
 	 sprintf(sWUHost,"weatherstation.wunderground.com");
 	 sprintf(sRequest,"GET /weatherstation/updateweatherstation.php?%s HTTP/1.1\r\n\r\n",sMessage);
 	 
-	 printf("Request:\n%s\n",sRequest);
-	 printf("Longitude: %d\n",strlen(sRequest));
+	 if(DEBUG_NET){
+		printf("Request:\n%s\n",sRequest);
+		printf("Longitude: %d\n",strlen(sRequest));
+	 }
 	 
 	 iSocketFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	 printf("Socket created\n");
+	 if(DEBUG_NET){
+		printf("Socket created\n");
+	}
 	 if(iSocketFD < 0)
 	 {
-		 printf("ERROR: Fail at opening the socket.\n");
+		perror("ERROR: Fail at opening the socket.\n");
 		 return SEND_DATA_ERROR;
 	 }
 	 
 	 stServer = gethostbyname(sWUHost);
-	 printf("Host addres resolved\n");
-	 printf("%s\n",stServer->h_name);
+	 if(DEBUG_NET){
+		printf("Host addres resolved\n");
+		printf("%s\n",stServer->h_name);
+	}
 	 if(stServer == NULL)
 	 {
-		 printf("ERROR: The host doesn't exist.\n");
+		perror("ERROR: The host doesn't exist.\n");
 		 return SEND_DATA_ERROR;
 	 }
 	 
@@ -129,20 +135,24 @@
 	 
 	 if(connect(iSocketFD,(struct sockaddr *)&stServ_addr,sizeof(stServ_addr)) < 0)
 	 {
-		 printf("ERROR: The connection can't be established with the host.\n");
+		 perror("ERROR: The connection can't be established with the host.\n");
 		 return SEND_DATA_ERROR;
 	 }
-	 printf("Connection established with the host: %s\n", sWUHost);
+	 if(DEBUG_NET){
+		printf("Connection established with the host: %s\n", sWUHost);
+	}
 	 
 	 iTotal = strlen(sRequest);
 	 iSent = 0;
 	 do
 	 {
 		 iBytesSent = write(iSocketFD,sRequest+iSent,iTotal-iSent);
-		 printf("%d\n",iBytesSent);
+		 if(DEBUG_NET){
+			printf("%d\n",iBytesSent);
+		}
 		 if(iBytesSent < 0)
 		 {
-			 printf("ERROR: The message can't be written in the socket.\n");
+			 perror("ERROR: The message can't be written in the socket.\n");
 			 return SEND_DATA_ERROR;
 		 }
 		 if(iBytesSent == 0)
@@ -151,7 +161,9 @@
 		 }
 		 iSent += iBytesSent;
 	 }while(iSent < iTotal);
-	 printf("Message sent.\n%s\n",sRequest);
+	 if(DEBUG_NET){
+		printf("Message sent.\n%s\n",sRequest);
+	 }
 	 
 	 iTotal = BUFFER_NET_LEN; 	 
 	 iReceived = 0;
@@ -159,10 +171,12 @@
 	 do
 	 {
 		 iBytesReceived = read(iSocketFD,sResponse+iReceived,iTotal-iReceived);
-		 printf("%d\n",iBytesReceived);
+		 if(DEBUG_NET){
+			printf("%d\n",iBytesReceived);
+		}
 		 if(iBytesReceived < 0)
 		 {
-			 printf("ERROR: The response can't be read from the socket.\n");
+			 perror("ERROR: The response can't be read from the socket.\n");
 			 return SEND_DATA_ERROR;
 		 }
 		 if(iBytesReceived == 0)
@@ -171,16 +185,20 @@
 		 }
 		 iReceived += iBytesReceived;
 	 }while(iReceived < iTotal);
-	 printf("Response received.\n");
+	 if(DEBUG_NET){
+		printf("Response received.\n");
+	}
 	 
 	 if(iReceived == iTotal)
 	 {
-		 printf("ERROR: The response is bigger than the buffer.\n");
+		 perror("ERROR: The response is bigger than the buffer.\n");
 	 }
 	 
 	 close(iSocketFD);
-	 printf("Connection closed.\n");
-	 printf("Response: %s\n", sResponse);
+	 if(DEBUG_NET){
+		printf("Connection closed.\n");
+		printf("Response: %s\n", sResponse);
+	}
 	 return 0;
  }
  
