@@ -44,20 +44,11 @@
 	 printf("Retrieving information from the device...");
 	 stUsbDevice = te923_handle();
 	 get_te923_lifedata(stUsbDevice,stDataSet);
-	 printf("Information: \n");
-	 printf("Timestamp: %u\n", stDataSet->timestamp);
-	 for(i=0;i<6;i++){
-		 printf("Temperature[%d]: %0.2f\n",i, stDataSet->t[i]);
-	 }
-	 for(i=0;i<6;i++){
-		 printf("Humidity[%d]: %d\n",i, stDataSet->h[i]);
-	 }
-	 printf("Wind chill: %0.1f\n", stDataSet->wChill);
-	 printf("Pressure: %0.1f\n", stDataSet->press);
-	 
-	 printData(stDataSet,":");
-	 
 	 te923_close(stUsbDevice);
+	 printf(" OK\n");
+	 
+	 // Create the URL with the data received
+	 printf("Creating an URL with information from the device...");
 	 printf(" OK\n");
 	 
 	 // Envio de la informacion a Weather Underground
@@ -70,10 +61,26 @@
 		 printf(" FAIL\n");
 	 }else
 	 {
-		 printf(" OK\n");//Data sent to Weather Underground\n");
+		 printf(" OK\n"); //Data sent to Weather Underground\n");
 	 }
 	 return 0;
  } 
+ 
+ void vCreateUrlFromData(Te923DataSet_t *stInputDataSet, char *sOutputUrl)
+ {
+	 printf("Information: \n");
+	 printf("Timestamp: %u\n", stInputDataSet->timestamp);
+	 for(i=0;i<6;i++){
+		 printf("Temperature[%d]: %0.2f\n",i, stInputDataSet->t[i]);
+	 }
+	 for(i=0;i<6;i++){
+		 printf("Humidity[%d]: %d\n",i, stInputDataSet->h[i]);
+	 }
+	 printf("Wind chill: %0.1f\n", stInputDataSet->wChill);
+	 printf("Pressure: %0.1f\n", stInputDataSet->press);
+	 
+	 printData(stInputDataSet,":");
+ }
  
  int iSendDataToWUService(char *sMessage)
  {

@@ -7,8 +7,11 @@
 #define BUFFER_NET_LEN 1024
 
 #define SEND_DATA_ERROR 1
-#define DEBUG_NET 0
 
+#define DEBUG_NET 0
+#define DEBUG_PARSE 1
+
+void vCreateUrlFromData(Te923DataSet_t *stInputDataSet, char *sOutputUrl);
 int iSendDataToWUService(char *sMessage);
 
 #endif /* WEATHERSTAT_H_*/
