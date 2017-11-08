@@ -25,44 +25,53 @@
  
   int main(int argc, char *argv[])
  {
-	 printf("Variables declaration...");
-	 char sUrlMessage[BUFFER_NET_LEN];
-	 struct usb_dev_handle *stUsbDevice;
-	 Te923DataSet_t *stDataSet;
-	 printf(" OK\n");
-	 
-	 printf("Variables initialization...");
-	 memcpy(sUrlMessage,"\0",strlen(sUrlMessage));
-	 stUsbDevice = (usb_dev_handle*)malloc(sizeof(stUsbDevice));
-	 memset(stUsbDevice,0,sizeof(stUsbDevice));
-	 stDataSet = (Te923DataSet_t*)malloc(sizeof(Te923DataSet_t));
-	 memset(stDataSet,0,sizeof(Te923DataSet_t));
-	 printf(" OK\n");
-	 
-	 // Retrieve information from the device
-	 printf("Retrieving information from the device...");
-	 stUsbDevice = te923_handle();
-	 get_te923_lifedata(stUsbDevice,stDataSet);
-	 te923_close(stUsbDevice);
-	 printf(" OK\n");
-	 
-	 // Create the URL with the data received
-	 printf("Creating an URL with information from the device...");
-	 sprintf(sUrlMessage,"ID=ICOMUNID85&PASSWORD=1142aee1&action=updateraw&dateutc=now&rainin=0&dailyrainin=0"); //&humidity=80&baromin=2992&tempf=55");
-	 vCreateUrlFromData(stDataSet, sUrlMessage);
-	 printf(" OK \n");
-	 
-	 // Envio de la informacion a Weather Underground
-	 printf("Sending information to Weather Underground... ");
-	 if(iSendDataToWUService(sUrlMessage))
-	 {
-		 perror("ERROR: Failure in the communication with the Weather Underground services to send the data.\n");
-		 printf(" FAIL\n");
-	 }else
-	 {
-		 printf(" OK\n"); //Data sent to Weather Underground\n");
-	 }
-	 
+//	 do{
+		 printf("Variables declaration...");
+		 char sUrlMessage[BUFFER_NET_LEN];
+		 char sParsedMessage[BUFFER_NET_LEN];
+		 struct usb_dev_handle *stUsbDevice;
+		 Te923DataSet_t *stDataSet;
+		 printf(" OK\n");
+		 
+		 printf("Variables initialization...");
+		 memcpy(sUrlMessage,"\0",strlen(sUrlMessage));
+		 memcpy(sParsedMessage,"\0",strlen(sParsedMessage));
+		 stUsbDevice = (usb_dev_handle*)malloc(sizeof(stUsbDevice));
+		 memset(stUsbDevice,0,sizeof(stUsbDevice));
+		 stDataSet = (Te923DataSet_t*)malloc(sizeof(Te923DataSet_t));
+		 memset(stDataSet,0,sizeof(Te923DataSet_t));
+		 printf(" OK\n");
+		 
+		 // Retrieve information from the device
+		 printf("Retrieving information from the device...");
+		 stUsbDevice = te923_handle();
+		 get_te923_lifedata(stUsbDevice,stDataSet);
+		 te923_close(stUsbDevice);
+		 printf(" OK\n");
+		 
+		 // Create the URL with the data received
+		 printf("Creating an URL with information from the device...");
+		 sprintf(sUrlMessage,"ID=ICOMUNID85&PASSWORD=1142aee1&action=updateraw&dateutc=now&rainin=0&dailyrainin=0"); //&humidity=80&baromin=2992&tempf=55");
+		 vCreateUrlFromData(stDataSet, sUrlMessage);
+		 printf(" OK \n");
+		 
+		 // Envio de la informacion a Weather Underground
+		 printf("Sending information to Weather Underground... ");
+		 if(iSendDataToWUService(sUrlMessage))
+		 {
+			 perror("ERROR: Failure in the communication with the Weather Underground services to send the data.\n");
+			 printf(" FAIL\n");
+		 }else
+		 {
+			 printf(" OK\n"); //Data sent to Weather Underground\n");
+		 }
+		 
+		 printf("Preparing string for the local server...");
+		 dataToString(stDataSet,sParsedMessage);
+		 printf(" OK\n");
+		 
+		 sleep(300);
+//	 }while(TRUE);
 	 return 0;
  } 
  
@@ -260,3 +269,6 @@
 	 return 0;
  }
  
+ int iSendDataToLocalServer(char *sMessage){
+	return 0;
+ }

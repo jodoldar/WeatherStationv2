@@ -6,6 +6,7 @@
 #define TE923_VENDOR    0x1130
 #define TE923_PRODUCT   0x6801
 #define BUFLEN          35
+#define BUFFER_STR_LEN 	1024
 #define VERSION "0.6.1"
 
 //extern unsigned short debug;
@@ -62,6 +63,7 @@ typedef struct {
 
 
 void usage();
+void dataToString(Te923DataSet_t *data, char *output);
 void printData(Te923DataSet_t *data, char *iText);
 struct usb_device *find_te923();
 struct usb_dev_handle *te923_handle();

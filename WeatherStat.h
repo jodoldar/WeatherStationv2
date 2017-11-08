@@ -16,5 +16,6 @@
 
 void vCreateUrlFromData(Te923DataSet_t *stInputDataSet, char *sOutputUrl);
 int iSendDataToWUService(char *sMessage);
+int iSendDataToLocalServer(char *sMessage);
 
 #endif /* WEATHERSTAT_H_*/

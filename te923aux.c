@@ -1,5 +1,6 @@
 #include "te923aux.h"
 #include <stdio.h>
+#include <string.h>
 
 void usage() {
 	printf("te923con, connector for TE923 weatherstations v%s - (c) 2010 - 2013 by Sebastian John (te923@fukz.org)\n", VERSION);
@@ -56,6 +57,75 @@ void usage() {
 	printf("  BAT1   - battery of sensor 1 (1-good (not present), 0-low)\n");
 	printf("\n");
 	printf("For updates, bugfixes and support visit http://te923.fukz.org.\n");
+}
+
+void dataToString(Te923DataSet_t *data, char *output){
+	int i;
+	char auxiliar[BUFFER_STR_LEN];
+	
+	memcpy(auxiliar,"\0",strlen(auxiliar));
+	memcpy(&output,"\0",strlen(output));
+	
+	sprintf(auxiliar,"%d:", data->timestamp);
+	strcpy(output, auxiliar);
+	
+	for(i=0; i<=5; i++){
+		if(data->_t[i] == 0){
+			sprintf(auxiliar,"%0.2f:", data->t[i]);
+			strcat(output, auxiliar);
+		}else{
+			sprintf(auxiliar,"%s:", "X");
+			strcat(output, auxiliar);
+		}
+		
+		if(data->_h[i] == 0){
+			sprintf(auxiliar,"%d:", data->h[i]);
+			strcat(output, auxiliar);
+		}else{
+			sprintf(auxiliar,"%s:", "X");
+			strcat(output, auxiliar);
+		}
+	}
+	
+	if (data->_press == 0){
+		sprintf(auxiliar, "%0.1f:", data->press);
+		strcat(output, auxiliar);
+	}else{
+		sprintf(auxiliar, "%s:", "X");
+		strcat(output, auxiliar);
+	}
+	
+	if (data->_wDir == 0){
+		sprintf(auxiliar,"%d:", data->wDir);
+		strcat(output, auxiliar);
+	}else{
+		sprintf(auxiliar, "%s:", "X");
+		strcat(output, auxiliar);
+	}
+	
+	if (data->_wSpeed == 0){
+		sprintf(auxiliar, "%0.1f:", data->wSpeed);
+		strcat(output, auxiliar);
+	}else{
+		sprintf(auxiliar, "%s:", "X");
+		strcat(output, auxiliar);
+	}
+	
+	if (data->_wGust == 0){
+		sprintf(auxiliar, "%0.1f:", data->wGust);
+		strcat(output, auxiliar);
+	}else{
+		sprintf(auxiliar, "%s:", "X");
+		strcat(output, auxiliar);
+	}
+	
+	if (data->_wChill == 0){
+		sprintf(auxiliar, "%0.1f:", data->wChill);
+		strcat(output, auxiliar);
+	}else{
+		sprintf(auxiliar, "%s:", "X");
+		strcat(output, auxiliar);
+	}
 }
 
 void printData(Te923DataSet_t *data, char *iText) {
