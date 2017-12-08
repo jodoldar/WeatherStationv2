@@ -2,25 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-//namespace LocalServer
-//{
-    public class ClaseMain
+namespace WeatherService
+{
+    class Program
     {
         public static void StartListening()
         {
-        IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
-        IPAddress ipAddress = ipHostInfo.AddressList[0];
-        IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 11000);
-        // DATA INICIALIZATION
-        byte[] bytes;   // Data buffer for incoming data.
+            // DATA INICIALIZATION
+            byte[] bytes;   // Data buffer for incoming data.
             IPHostEntry ipHostInfo;
             IPAddress ipAddress;
         }
-        public static int Main(string[] args)
+
+        static int Main(string[] args)
         {
             //Your program starts here...
             // https://msdn.microsoft.com/es-es/library/6y0e13d3(v=vs.110).aspx
@@ -28,4 +25,5 @@ using System.Threading.Tasks;
             return 0;
         }
     }
-//}
+}
+
