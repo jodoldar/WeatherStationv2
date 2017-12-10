@@ -11,7 +11,7 @@
 
 #define SEND_DATA_ERROR 1
 
-#define DEBUG_NET 0
+#define DEBUG_NET 1
 #define DEBUG_PARSE 0
 
 void vCreateUrlFromData(Te923DataSet_t *stInputDataSet, char *sOutputUrl);

@@ -80,7 +80,8 @@
 			 printf(" OK\n"); //Data sent to the local server
 		 }
 		 
-		 sleep(300);
+		sleep(60);
+		//sleep(300);
 	 }while(TRUE);
 	 return 0;
  } 
@@ -324,7 +325,7 @@
 	 if(DEBUG_NET){
 		printf("Host addres resolved\n");
 		printf("%s\n",stServer->h_name);
-	}
+	 }
 	 if(stServer == NULL)
 	 {
 		perror("ERROR: The host doesn't exist.\n");
