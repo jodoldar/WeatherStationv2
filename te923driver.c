@@ -356,7 +356,6 @@ int get_te923_lifedata(usb_dev_handle *devh, Te923DataSet_t *data) {
 
 
 
-
 int get_te923_devstate(usb_dev_handle *devh, Te923DevSet_t *dev) {
 	int ret;
 	int adr = 0x000098;

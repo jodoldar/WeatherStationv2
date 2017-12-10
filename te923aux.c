@@ -254,7 +254,6 @@ struct usb_dev_handle *te923_handle() {
 	return devh;
 }
 
-
 void te923_close(usb_dev_handle *devh) {
 	usb_release_interface(devh, 0);
 	usb_close(devh);
