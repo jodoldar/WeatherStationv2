@@ -16,6 +16,8 @@
  #include <unistd.h>
  #include <string.h>
  #include <sys/socket.h>
+ #include <sys/select.h>
+ #include <sys/types.h>
  #include <netinet/in.h>
  #include <netdb.h>
  #include <usb.h>
@@ -70,9 +72,15 @@
 		 dataToString(stDataSet,sParsedMessage);
 		 printf(" OK\n");
 		 
+		 int iSocketID = 0;
 		 printf("Sending information to local server...");
-		 if(iSendDataToLocalServer(sParsedMessage))
+		 if(iSendDataToLocalServer(sParsedMessage, &iSocketID))
 		 {
+			 if(iSocketID != 0){
+				fprintf(stderr,"Socket id: %d", iSocketID);
+				close(iSocketID);
+				perror("Socket closed from outside");
+			 }
 			 perror("ERROR: Failure in the communication with the local server.\n");
 			 printf(" FAIL\n");
 		 }else
@@ -280,12 +288,11 @@
 	 return 0;
  }
  
- int iSendDataToLocalServer(char *sMessage){
+ int iSendDataToLocalServer(char *sMessage, int *iSocketFD){
 	 int iPortNumber;
 	 char sServerHost[BUFFER_NET_LEN];
 	 struct hostent *stServer;
 	 struct sockaddr_in stServ_addr;
-	 int iSocketFD;
 	 int iBytesSent, iBytesReceived;
 	 int iSent, iReceived;
 	 int iTotal;
@@ -295,7 +302,6 @@
 	 iPortNumber = 11000;
 	 memcpy(sServerHost,"\0",strlen(sServerHost));
 	 memcpy(sRequest,"\0",strlen(sRequest));
-	 iSocketFD = 0;
 	 iBytesSent = 0;
 	 iBytesReceived = 0;
 	 iSent = 0;
@@ -311,11 +317,11 @@
 		printf("Longitude: %d\n",strlen(sRequest));
 	 }
 	 
-	 iSocketFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	 *iSocketFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	 if(DEBUG_NET){
 		printf("Socket created\n");
 	}
-	 if(iSocketFD < 0)
+	 if(*iSocketFD < 0)
 	 {
 		perror("ERROR: Fail at opening the socket.\n");
 		 return SEND_DATA_ERROR;
@@ -337,7 +343,7 @@
 	 stServ_addr.sin_port = htons(iPortNumber);
 	 memcpy(&stServ_addr.sin_addr.s_addr, stServer->h_addr,stServer->h_length);
 	 
-	 if(connect(iSocketFD,(struct sockaddr *)&stServ_addr,sizeof(stServ_addr)) < 0)
+	 if(connect(*iSocketFD,(struct sockaddr *)&stServ_addr,sizeof(stServ_addr)) < 0)
 	 {
 		 perror("ERROR: The connection can't be established with the host.\n");
 		 return SEND_DATA_ERROR;
@@ -350,7 +356,7 @@
 	 iSent = 0;
 	 do
 	 {
-		 iBytesSent = write(iSocketFD,sRequest+iSent,iTotal-iSent);
+		 iBytesSent = write(*iSocketFD,sRequest+iSent,iTotal-iSent);
 		 if(DEBUG_NET){
 			printf("%d\n",iBytesSent);
 		}
@@ -374,7 +380,7 @@
 	 
 	 do
 	 {
-		 iBytesReceived = read(iSocketFD,sResponse+iReceived,iTotal-iReceived);
+		 iBytesReceived = read(*iSocketFD,sResponse+iReceived,iTotal-iReceived);
 		 if(DEBUG_NET){
 			printf("%d\n",iBytesReceived);
 		}
@@ -398,7 +404,7 @@
 		 perror("ERROR: The response is bigger than the buffer.\n");
 	 }
 	 
-	 close(iSocketFD);
+	 close(*iSocketFD);
 	 if(DEBUG_NET){
 		printf("Connection closed.\n");
 		printf("Response: %s\n", sResponse);
