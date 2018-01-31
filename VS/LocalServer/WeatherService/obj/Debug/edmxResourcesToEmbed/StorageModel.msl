@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="StorageModelStoreContainer" CdmEntityContainer="StoringContext">
+    <EntitySetMapping Name="MeasurementSet">
+      <EntityTypeMapping TypeName="IsTypeOf(StorageModel.Measurement)">
+        <MappingFragment StoreEntitySet="MeasurementSet">
+          <ScalarProperty Name="MeasurementId" ColumnName="MeasurementId" />
+          <ScalarProperty Name="OutsideTemperature" ColumnName="OutsideTemperature" />
+          <ScalarProperty Name="OutsideHumidity" ColumnName="OutsideHumidity" />
+          <ScalarProperty Name="Pressure" ColumnName="Pressure" />
+          <ScalarProperty Name="WindSpeed" ColumnName="WindSpeed" />
+          <ScalarProperty Name="WindDir" ColumnName="WindDir" />
+          <ScalarProperty Name="GustSpeed" ColumnName="GustSpeed" />
+          <ScalarProperty Name="GustDir" ColumnName="GustDir" />
+          <ScalarProperty Name="DewPoint" ColumnName="DewPoint" />
+          <ScalarProperty Name="TimeStamp" ColumnName="TimeStamp" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="RainMeasurementSet">
+      <EntityTypeMapping TypeName="IsTypeOf(StorageModel.RainMeasurement)">
+        <MappingFragment StoreEntitySet="RainMeasurementSet">
+          <ScalarProperty Name="TimeStamp" ColumnName="TimeStamp" />
+          <ScalarProperty Name="Rain" ColumnName="Rain" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <AssociationSetMapping Name="MeasurementRainMeasurement" TypeName="StorageModel.MeasurementRainMeasurement" StoreEntitySet="RainMeasurementSet">
+      <EndProperty Name="Measurement">
+        <ScalarProperty Name="MeasurementId" ColumnName="Measurement_MeasurementId" />
+      </EndProperty>
+      <EndProperty Name="RainMeasurement">
+        <ScalarProperty Name="TimeStamp" ColumnName="TimeStamp" />
+      </EndProperty>
+    </AssociationSetMapping>
+  </EntityContainerMapping>
+</Mapping>

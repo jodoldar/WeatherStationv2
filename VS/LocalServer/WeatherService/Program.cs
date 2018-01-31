@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace WeatherService
 {
@@ -85,11 +86,20 @@ namespace WeatherService
             Console.Read();
         }
 
+        static public void TestDatabase()
+        {
+            var db = new StoringContext();
+            var measure = new Measurement (20.0, 50.0, 1013, 5.0, 180, 10.0, 185, DateTime.Now );
+            db.MeasurementSet.Add(measure);
+            db.SaveChanges();
+        }
+
         static int Main(string[] args)
         {
             //Your program starts here...
             // https://msdn.microsoft.com/es-es/library/6y0e13d3(v=vs.110).aspx
 
+            TestDatabase();
             StartListening();
             return 0;
         }

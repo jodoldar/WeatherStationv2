@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="StorageModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+  <EntityType Name="MeasurementSet">
+    <Key>
+      <PropertyRef Name="MeasurementId" />
+    </Key>
+    <Property Name="MeasurementId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="OutsideTemperature" Type="decimal" Precision="18" Scale="0" />
+    <Property Name="OutsideHumidity" Type="decimal" Precision="18" Scale="0" />
+    <Property Name="Pressure" Type="decimal" Precision="18" Scale="0" />
+    <Property Name="WindSpeed" Type="decimal" Precision="18" Scale="0" />
+    <Property Name="WindDir" Type="smallint" />
+    <Property Name="GustSpeed" Type="decimal" Precision="18" Scale="0" />
+    <Property Name="GustDir" Type="smallint" />
+    <Property Name="DewPoint" Type="decimal" Precision="18" Scale="0" />
+    <Property Name="TimeStamp" Type="time" Precision="7" Nullable="false" />
+  </EntityType>
+  <EntityType Name="RainMeasurementSet">
+    <Key>
+      <PropertyRef Name="TimeStamp" />
+    </Key>
+    <Property Name="TimeStamp" Type="time" Precision="7" Nullable="false" StoreGeneratedPattern="Identity" />
+    <Property Name="Rain" Type="decimal" Precision="18" Scale="0" Nullable="false" />
+    <Property Name="Measurement_MeasurementId" Type="int" Nullable="false" />
+  </EntityType>
+  <Association Name="FK_MeasurementRainMeasurement">
+    <End Role="MeasurementSet" Type="Self.MeasurementSet" Multiplicity="1" />
+    <End Role="RainMeasurementSet" Type="Self.RainMeasurementSet" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="MeasurementSet">
+        <PropertyRef Name="MeasurementId" />
+      </Principal>
+      <Dependent Role="RainMeasurementSet">
+        <PropertyRef Name="Measurement_MeasurementId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="StorageModelStoreContainer">
+    <EntitySet Name="MeasurementSet" EntityType="Self.MeasurementSet" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="RainMeasurementSet" EntityType="Self.RainMeasurementSet" Schema="dbo" store:Type="Tables" />
+    <AssociationSet Name="FK_MeasurementRainMeasurement" Association="Self.FK_MeasurementRainMeasurement">
+      <End Role="MeasurementSet" EntitySet="MeasurementSet" />
+      <End Role="RainMeasurementSet" EntitySet="RainMeasurementSet" />
+    </AssociationSet>
+  </EntityContainer>
+</Schema>

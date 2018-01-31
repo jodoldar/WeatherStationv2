@@ -5,3 +5,7 @@ D:\Github\WeatherStationv2\VS\LocalServer\WeatherService\obj\Debug\WeatherServic
 D:\Github\WeatherStationv2\VS\LocalServer\WeatherService\obj\Debug\WeatherService.csproj.CoreCompileInputs.cache
 D:\Github\WeatherStationv2\VS\LocalServer\WeatherService\obj\Debug\WeatherService.exe
 D:\Github\WeatherStationv2\VS\LocalServer\WeatherService\obj\Debug\WeatherService.pdb
+D:\Github\WeatherStationv2\VS\LocalServer\WeatherService\bin\Debug\EntityFramework.dll
+D:\Github\WeatherStationv2\VS\LocalServer\WeatherService\bin\Debug\EntityFramework.SqlServer.dll
+D:\Github\WeatherStationv2\VS\LocalServer\WeatherService\bin\Debug\EntityFramework.xml
+D:\Github\WeatherStationv2\VS\LocalServer\WeatherService\bin\Debug\EntityFramework.SqlServer.xml
