@@ -27,71 +27,87 @@
  
   int main(int argc, char *argv[])
  {
-	 do{
-		 printf("Variables declaration...");
-		 char sUrlMessage[BUFFER_NET_LEN];
-		 char sParsedMessage[BUFFER_NET_LEN];
-		 struct usb_dev_handle *stUsbDevice;
-		 Te923DataSet_t *stDataSet;
-		 printf(" OK\n");
+	sleep(60); //Esperamos 1 minuto para que arranque el sistema
+	// Lanzamos el bot de telegram
+	int pid, ret;
+	
+	pid = fork();
+	
+	if (pid == 0)
+	{
+		// Soy el proceso hijo
+		ret = execl ("/home/pi/METARBot/MetarBot.py","/home/pi/METARBot/MetarBot.py", (char*) NULL);
+		return ret;
+	}
+	else
+	{
+		//Soy el proceso original
+		do{
+			printf("Variables declaration...");
+			char sUrlMessage[BUFFER_NET_LEN];
+			char sParsedMessage[BUFFER_NET_LEN];
+			struct usb_dev_handle *stUsbDevice;
+			Te923DataSet_t *stDataSet;
+			printf(" OK\n");
 		 
-		 printf("Variables initialization...");
-		 memcpy(sUrlMessage,"\0",strlen(sUrlMessage));
-		 memcpy(sParsedMessage,"\0",strlen(sParsedMessage));
-		 stUsbDevice = (usb_dev_handle*)malloc(sizeof(stUsbDevice));
-		 memset(stUsbDevice,0,sizeof(stUsbDevice));
-		 stDataSet = (Te923DataSet_t*)malloc(sizeof(Te923DataSet_t));
-		 memset(stDataSet,0,sizeof(Te923DataSet_t));
-		 printf(" OK\n");
+			printf("Variables initialization...");
+			memcpy(sUrlMessage,"\0",strlen(sUrlMessage));
+			memcpy(sParsedMessage,"\0",strlen(sParsedMessage));
+			stUsbDevice = (usb_dev_handle*)malloc(sizeof(stUsbDevice));
+			memset(stUsbDevice,0,sizeof(stUsbDevice));
+			stDataSet = (Te923DataSet_t*)malloc(sizeof(Te923DataSet_t));
+			memset(stDataSet,0,sizeof(Te923DataSet_t));
+			printf(" OK\n");
 		 
-		 // Retrieve information from the device
-		 printf("Retrieving information from the device...");
-		 stUsbDevice = te923_handle();
-		 get_te923_lifedata(stUsbDevice,stDataSet);
-		 te923_close(stUsbDevice);
-		 printf(" OK\n");
-		 
-		 // Create the URL with the data received
-		 printf("Creating an URL with information from the device...");
-		 sprintf(sUrlMessage,"ID=ICOMUNID85&PASSWORD=1142aee1&action=updateraw&dateutc=now&rainin=0&dailyrainin=0"); //&humidity=80&baromin=2992&tempf=55");
-		 vCreateUrlFromData(stDataSet, sUrlMessage);
-		 printf(" OK \n");
-		 
-		 // Envio de la informacion a Weather Underground
-		 printf("Sending information to Weather Underground... ");
-		 if(iSendDataToWUService(sUrlMessage))
-		 {
-			 perror("ERROR: Failure in the communication with the Weather Underground services to send the data.\n");
-			 printf(" FAIL\n");
-		 }else
-		 {
-			 printf(" OK\n"); //Data sent to Weather Underground\n");
-		 }
-		 
-		 printf("Preparing string for the local server...");
-		 dataToString(stDataSet,sParsedMessage);
-		 printf(" OK\n");
-		 
-		 int iSocketID = 0;
-		 printf("Sending information to local server...");
-		 if(iSendDataToLocalServer(sParsedMessage, &iSocketID))
-		 {
-			 if(iSocketID != 0){
-				fprintf(stderr,"Socket id: %d", iSocketID);
-				close(iSocketID);
-				perror("Socket closed from outside");
-			 }
-			 perror("ERROR: Failure in the communication with the local server.\n");
-			 printf(" FAIL\n");
-		 }else
-		 {
-			 printf(" OK\n"); //Data sent to the local server
-		 }
-		 
-		sleep(60);
-		//sleep(300);
-	 }while(TRUE);
-	 return 0;
+			// Retrieve information from the device
+			printf("Retrieving information from the device...");
+			stUsbDevice = te923_handle();
+			get_te923_lifedata(stUsbDevice,stDataSet);
+			te923_close(stUsbDevice);
+			printf(" OK\n");
+
+			// Create the URL with the data received
+			printf("Creating an URL with information from the device...");
+			sprintf(sUrlMessage,"ID=ICOMUNID85&PASSWORD=1142aee1&action=updateraw&dateutc=now&rainin=0&dailyrainin=0"); //&humidity=80&baromin=2992&tempf=55");
+			vCreateUrlFromData(stDataSet, sUrlMessage);
+			printf(" OK \n");
+
+			// Envio de la informacion a Weather Underground
+			printf("Sending information to Weather Underground... ");
+			if(iSendDataToWUService(sUrlMessage))
+			{
+				perror("ERROR: Failure in the communication with the Weather Underground services to send the data.\n");
+				printf(" FAIL\n");
+			}else
+			{
+				printf(" OK\n"); //Data sent to Weather Underground\n");
+			}
+
+			printf("Preparing string for the local server...");
+			dataToString(stDataSet,sParsedMessage);
+			printf(" OK\n");
+
+			int iSocketID = 0;
+			printf("Sending information to local server...");
+			if(iSendDataToLocalServer(sParsedMessage, &iSocketID))
+			{
+				if(iSocketID != 0){
+					fprintf(stderr,"Socket id: %d\n", iSocketID);
+					close(iSocketID);
+					perror("Socket closed from outside");
+				}
+				perror("ERROR: Failure in the communication with the local server.\n");
+				printf(" FAIL\n");
+			}else
+			{
+				printf(" OK\n"); //Data sent to the local server
+			}
+
+			sleep(60);
+			//sleep(300);
+		}while(TRUE);
+		return 0;
+	}
  } 
  
  void vCreateUrlFromData(Te923DataSet_t *stInputDataSet, char *sOutputUrl)
